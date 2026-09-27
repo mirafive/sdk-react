@@ -17,8 +17,8 @@ bun run size             # size-limit against the limit in package.json (peers e
 ## Local dependencies
 
 `@mirafive/sdk-browser` is a `file:../sdk-browser` devDependency plus an `overrides` entry
-until it is published; the peer range stays `^0.5.0`. Build `../sdk-browser` first if its
-`dist/` is missing. Once 0.5.0 is on npm, switch the devDependency to `^0.5.0` and drop
+until it is published; the peer range stays `^1.0.0`. Build `../sdk-browser` first if its
+`dist/` is missing. Once 1.0.0 is on npm, switch the devDependency to `^1.0.0` and drop
 `overrides`.
 
 ## Rules

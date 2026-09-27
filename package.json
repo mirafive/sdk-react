@@ -1,6 +1,6 @@
 {
   "name": "@mirafive/sdk-react",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "React bindings for MIRA FIVE: a provider, flag hooks that render the same on the server and in hydration, and a mount tracker.",
   "keywords": [
     "ab-testing",
@@ -66,7 +66,7 @@
     "vitest": "^5.0.2"
   },
   "peerDependencies": {
-    "@mirafive/sdk-browser": "^0.5.0",
+    "@mirafive/sdk-browser": "^1.0.0",
     "react": "^18.3.0 || ^19.0.0"
   },
   "overrides": {

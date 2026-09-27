@@ -22,7 +22,7 @@ npm install @mirafive/sdk-react @mirafive/sdk-browser
 # or: bun add / pnpm add / yarn add
 ```
 
-Peers: `react` ≥ 18.3 (18 and 19), `@mirafive/sdk-browser` ^0.5.0. ESM only. Using Next.js
+Peers: `react` ≥ 18.3 (18 and 19), `@mirafive/sdk-browser` ^1.0.0. ESM only. Using Next.js
 or TanStack Start? Use [`@mirafive/sdk-next`](https://github.com/mirafive/sdk-next) or
 [`@mirafive/sdk-tanstack`](https://github.com/mirafive/sdk-tanstack): they create the
 client for you and add the server side.
