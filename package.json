@@ -1,7 +1,7 @@
 {
   "name": "@mirafive/sdk-react",
   "version": "1.0.0",
-  "description": "React bindings for MIRA FIVE: a provider, flag hooks that render the same on the server and in hydration, and a mount tracker.",
+  "description": "MIRA FIVE SDK for React",
   "keywords": [
     "ab-testing",
     "analytics",
