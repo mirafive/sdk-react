@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — unreleased
+## 1.0.0 — 2026-09-27
 
 First release on the v1 protocol, written from scratch over `@mirafive/sdk-browser` 1.0.
 
