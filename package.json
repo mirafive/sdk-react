@@ -1,0 +1,85 @@
+{
+  "name": "@mirafive/sdk-react",
+  "version": "0.5.0",
+  "description": "React bindings for MIRA FIVE: a provider, flag hooks that render the same on the server and in hydration, and a mount tracker.",
+  "keywords": [
+    "ab-testing",
+    "analytics",
+    "cookieless",
+    "feature-flags",
+    "gdpr",
+    "mirafive",
+    "privacy",
+    "react"
+  ],
+  "homepage": "https://mirafive.io",
+  "bugs": {
+    "email": "support@mirafive.io"
+  },
+  "license": "MIT",
+  "author": "MIRA FIVE <support@mirafive.io>",
+  "repository": "github:mirafive/sdk-react",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --type-aware --deny-warnings",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "size": "size-limit",
+    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && publint --strict && attw --pack --profile esm-only && size-limit"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@mirafive/sdk-browser": "file:../sdk-browser",
+    "@size-limit/preset-small-lib": "^14.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "happy-dom": "^20.14.5",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "oxlint-tsgolint": "^7.0.2003",
+    "publint": "^0.3.24",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "size-limit": "^14.0.1",
+    "tsdown": "^0.23.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  },
+  "peerDependencies": {
+    "@mirafive/sdk-browser": "^0.5.0",
+    "react": "^18.3.0 || ^19.0.0"
+  },
+  "overrides": {
+    "@mirafive/sdk-browser": "file:../sdk-browser"
+  },
+  "size-limit": [
+    {
+      "name": "index",
+      "path": "dist/index.js",
+      "import": "*",
+      "gzip": true,
+      "limit": "1 kB"
+    }
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "bun@1.4.2"
+}
