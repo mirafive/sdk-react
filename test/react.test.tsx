@@ -163,7 +163,10 @@ describe("server render and hydration", () => {
 
   it("accepts a bootstrap object", () => {
     const html = renderToString(
-      <MiraProvider client={undefined} bootstrap={{ v: 1, at: 0, values: { "new-checkout": ["off"] } }}>
+      <MiraProvider
+        client={undefined}
+        bootstrap={{ v: 1, at: Date.now(), values: { "new-checkout": ["off"] } }}
+      >
         <Checkout />
       </MiraProvider>
     )
@@ -200,6 +203,70 @@ const Page = ({ step }: { step: number }): null => {
   useTrackOnMount("checkout_viewed", { step })
   return null
 }
+
+describe("bootstrap age and identity", () => {
+  it("ignores a bootstrap older than 7 days, as the browser SDK does", () => {
+    const html = renderToString(
+      <MiraProvider client={undefined} bootstrap={blockHtml(Date.now() - 8 * 86_400_000)}>
+        <Checkout />
+      </MiraProvider>
+    )
+
+    expect(html).toContain("false<!-- --> <!-- -->plain<!-- --> <!-- -->10")
+  })
+
+  it("does not re-render after hydration when the browser's config equals the bootstrap's", async () => {
+    const block = blockHtml(Date.now())
+    let renders = 0
+    const Pricing = (): React.ReactElement => {
+      renders += 1
+      return <b>{useFlagConfig("pricing", { price: 10 }).price}</b>
+    }
+    const html = renderToString(
+      <MiraProvider client={undefined} bootstrap={block}>
+        <Pricing />
+      </MiraProvider>
+    )
+
+    document.body.innerHTML = `${block}<div id="root">${html}</div>`
+    renders = 0
+
+    const root = document.getElementById("root")!
+
+    await act(async () => {
+      hydrateRoot(
+        root,
+        <MiraProvider client={browserClient()} bootstrap={block}>
+          <Pricing />
+        </MiraProvider>
+      )
+    })
+
+    expect(root.textContent).toBe("12")
+    expect(renders).toBe(1)
+  })
+
+  it("gives an inert client whose onFlags and flush behave like sdk-browser's stubs", async () => {
+    let client: Mira | undefined
+    const Reader = (): null => {
+      client = useMira()
+      return null
+    }
+
+    renderToString(
+      <MiraProvider client={undefined}>
+        <Reader />
+      </MiraProvider>
+    )
+
+    const unsubscribe = client!.onFlags(() => {})
+
+    expect(typeof unsubscribe).toBe("function")
+    expect(() => unsubscribe()).not.toThrow()
+    await expect(client!.flush()).resolves.toBeUndefined()
+    expect(client!.config("limits", { max: 3 })).toEqual({ max: 3 })
+  })
+})
 
 describe("in the browser", () => {
   it("re-renders when flags change and unsubscribes on unmount", () => {

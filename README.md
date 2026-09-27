@@ -8,7 +8,7 @@ feature flags from MIRA FIVE, hosted in the EU.
 
 | Import | min + gzip |
 |---|---|
-| `@mirafive/sdk-react` | 0.73 kB |
+| `@mirafive/sdk-react` | 0.84 kB |
 
 Measured with its peers (`react`, `@mirafive/sdk-browser`) external: this is what the
 package adds on top of the browser SDK. What you do not import is not shipped
@@ -69,18 +69,27 @@ for the pageview in the source's live view in MIRA FIVE.
 
 ### Server rendering
 
-`createMira()` needs a browser, so a server render passes `client={undefined}`. Hand the
+`createMira()` needs a browser, so the server render passes `client={undefined}`. Hand the
 provider the flag answers your server rendered, and every flag hook returns exactly those
 during the server render and during hydration, so both render the same markup:
 
 ```tsx
-<MiraProvider client={typeof window === "undefined" ? undefined : mira} bootstrap={bootstrap}>
+// module scope of a file both the server and the browser load
+const mira =
+  typeof window === "undefined"
+    ? undefined
+    : createMira({ key: import.meta.env.VITE_MIRAFIVE_KEY, plugins: [pageviews(), flags()] })
+
+<MiraProvider client={mira} bootstrap={bootstrap}>
 ```
 
 `bootstrap` is a `FlagBootstrap` object, or the `<script id="mirafive-flags">` block that
 `UserFlags.bootstrap()` from `@mirafive/sdk-server/flags` returns. Render that block into
-the page too, before the app's scripts, so the browser SDK starts from the same answers.
-After hydration the hooks read the browser SDK and re-render when flags change.
+the page too, before the app's scripts, so the browser SDK starts from the same answers
+(`@mirafive/sdk-next` and `@mirafive/sdk-tanstack` do this for you). A bootstrap older than
+7 days is ignored on both sides, as the browser SDK ignores it. After hydration the hooks
+read the browser SDK and re-render only when an answer really changes: a config equal to
+the bootstrap's keeps the object already rendered.
 
 ## Consent & privacy
 
@@ -101,7 +110,8 @@ After hydration the hooks read the browser SDK and re-render when flags change.
   `bootstrap` is a `FlagBootstrap` or the bootstrap block string; hooks read only it
   during a server render and hydration.
 - `useMira<Events>(): Mira<Events>`: the client. During a server render it is an inert
-  stand-in: calls do nothing and reads return their fallback.
+  stand-in: calls do nothing, reads return their fallback, `onFlags` returns a no-op
+  unsubscribe and `flush()` resolves.
 - `useFlag(key, fallback: string | boolean): string | boolean`: the variant, or
   `true`/`false` for an on/off flag. Counts an exposure where the browser SDK would.
 - `useFlagConfig<T>(key, fallback: T): T`: the remote-config value of the flag's variant.

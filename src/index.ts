@@ -40,10 +40,17 @@ const Context = createContext<Store | undefined>(undefined)
 const none = {} as never
 const noop = (): void => {}
 
-// Answers like a client without plugins: calls do nothing and reads return their fallback.
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- every member is the same stub
+// Answers like sdk-browser's stubs for missing plugins: calls do nothing, reads return their fallback.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- every member is a stub
 const inert = new Proxy({} as Mira, {
-  get: (_, name) => (name === "then" ? undefined : (...args: unknown[]) => args[1])
+  get: (_, name) =>
+    name === "then"
+      ? undefined
+      : name === "onFlags"
+        ? () => noop
+        : name === "flush"
+          ? () => Promise.resolve()
+          : (...args: unknown[]) => args[1]
 })
 
 const valuesOf = (bootstrap: MiraProviderProps["bootstrap"]): Store["values"] => {
@@ -51,7 +58,8 @@ const valuesOf = (bootstrap: MiraProviderProps["bootstrap"]): Store["values"] =>
     const parsed: FlagBootstrap | undefined =
       typeof bootstrap === "string" ? JSON.parse(bootstrap.replace(/^[^{]*|[^}]*$/g, "")) : bootstrap
 
-    return parsed?.v === 1 ? parsed.values : undefined
+    // sdk-browser ignores a block older than 7 days; so do the renders that must match it.
+    return parsed?.v === 1 && Date.now() - parsed.at < 6048e5 ? parsed.values : undefined
   } catch {
     return undefined
   }
@@ -80,6 +88,18 @@ export const useMira = <Events extends EventMap = EventMap>(): Mira<Events> => u
 const useAnswer = (key: string, config: boolean): unknown => {
   const { client, values } = useStore()
   const subscribe = useCallback((listener: () => void) => client?.onFlags(listener) ?? noop, [client])
+  const last = useRef<[raw: unknown, shown: unknown]>([none, none])
+
+  // The bootstrap and the browser SDK parse the same JSON into different objects: keep the one shown.
+  const stable = (raw: unknown): unknown => {
+    const [previous, shown] = last.current
+
+    if (raw !== previous) {
+      last.current = [raw, config && JSON.stringify(raw) === JSON.stringify(shown) ? shown : raw]
+    }
+
+    return last.current[1]
+  }
 
   const rendered = (): unknown => {
     const answer = values?.[key]
@@ -93,8 +113,8 @@ const useAnswer = (key: string, config: boolean): unknown => {
 
   return useSyncExternalStore(
     subscribe,
-    () => (client ? (config ? client.config(key, none) : client.flag(key, none)) : rendered()),
-    rendered
+    () => stable(client ? (config ? client.config(key, none) : client.flag(key, none)) : rendered()),
+    () => stable(rendered())
   )
 }
 
