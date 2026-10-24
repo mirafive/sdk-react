@@ -60,8 +60,10 @@ createRoot(document.getElementById("root")!).render(
 Pageviews come from the `pageviews()` plugin, which follows every SPA router through the
 Navigation API or the History API. There is no router hook to add.
 
+For revenue, add `payment_id` (1–255 characters) to the properties next to `revenue` and `currency`: the payment provider's id of the payment. For Stripe pass the Checkout Session id on the success page or the PaymentIntent id from a webhook, for example `client.track("order completed", { revenue: 49, currency: "EUR", payment_id: sessionId })`. MIRA FIVE merges the event with the payment it imports from your connected Stripe account, so the sale counts once.
+
 Verify it: open the app (not `localhost`, or pass `trackLocalhost: true`) and look for
-`POST https://events.mirafive.io/v1/batch/mf_…` in the network tab answering `202`, then
+`POST https://collect.mirafive.io/v1/batch/mf_…` in the network tab answering `202`, then
 for the pageview in the source's live view in MIRA FIVE.
 
 ### Server rendering
@@ -140,7 +142,7 @@ Add MIRA FIVE analytics to this React app with @mirafive/sdk-react.
    manager and wants ids: add identity() from "@mirafive/sdk-browser/identity", pass mode: "full",
    and call useMira().consent({ statistics }) from its callback.
 5. Verify: load a page (not localhost, or pass trackLocalhost: true) and check the network tab for
-   POST https://events.mirafive.io/v1/batch/<key> answering 202; report what you changed.
+   POST https://collect.mirafive.io/v1/batch/<key> answering 202; report what you changed.
 Do not add other analytics libraries, cookies or consent banners.
 ```
 
@@ -151,7 +153,7 @@ Facts for agents:
   subpaths (`/pageviews`, `/identity`, `/autocapture`, `/search`). No default exports.
 - Env vars: the public website key per bundler (`VITE_MIRAFIVE_KEY`,
   `NEXT_PUBLIC_MIRAFIVE_KEY`, `PUBLIC_MIRAFIVE_KEY`), `MIRAFIVE_HOST` (optional, default
-  `https://events.mirafive.io`). `MIRAFIVE_SECRET_KEY` is for server code only
+  `https://collect.mirafive.io`). `MIRAFIVE_SECRET_KEY` is for server code only
   (`@mirafive/sdk-server`) and must never be imported into a component.
 - Never ship `MIRAFIVE_SECRET_KEY` to a browser bundle; a secret key in a browser is
   refused and marked exposed.
