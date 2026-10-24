@@ -1,9 +1,9 @@
 # Agents working in mirafive/sdk-react
 
-`@mirafive/sdk-react`: React bindings (provider, flag hooks, mount tracker) over
-`@mirafive/sdk-browser`. Part of the MIRA FIVE SDK family; the wire contract, flag
-semantics and public API live in [mirafive/protocol](https://github.com/mirafive/protocol)
-(PROTOCOL.md, FLAGS.md, API.md).
+`@mirafive/sdk-react`: React bindings (provider, client hook, mount tracker) over
+`@mirafive/sdk-browser`. Part of the MIRA FIVE SDK family; the wire contract
+and public API live in [mirafive/protocol](https://github.com/mirafive/protocol)
+(PROTOCOL.md, API.md).
 
 ## Commands
 
@@ -23,10 +23,8 @@ build the sibling repo and `bun link` it; never commit a `file:` path or `overri
 
 - API.md is the contract for this package's public surface. Do not add, rename or
   remove exports without changing API.md first.
-- Thin by design: no transport, no flag evaluator, no router integration. Everything goes
+- Thin by design: no transport, no router integration. Everything goes
   through the `Mira` client; pageviews come from sdk-browser's `pageviews()` plugin.
-- Server render and hydration read only the `bootstrap` prop, never the client or the DOM;
-  otherwise the two renders can differ. `test/react.test.tsx` hydrates real server markup.
 - `"use client"` must stay the first line of `dist/index.js`.
 - Bundle size is the headline goal: ≤ 1.0 kB min + gzip with peers external. No runtime
   dependencies.

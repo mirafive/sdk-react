@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- Removed feature flags and A/B experiments: `useFlag()`, `useFlagConfig()`, the `FlagBootstrap`
+  type and the `bootstrap` prop of `<MiraProvider>`. The provider, `useMira()` and
+  `useTrackOnMount()` stay. The inert client of a server render no longer has `onFlags`.
+- Statistics is the only consent purpose. A consent call that still passes `experiments` or
+  `targeting` is accepted and the keys are ignored.
+
 ## 1.0.0 — 2026-09-27
 
 First release on the v1 protocol, written from scratch over `@mirafive/sdk-browser` 1.0.
