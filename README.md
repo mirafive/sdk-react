@@ -1,170 +1,84 @@
-# @mirafive/sdk-react
+# @mirafive/react
 
-React bindings for the MIRA FIVE browser SDK: a provider, a hook for the client,
-and a mount tracker. Privacy-first analytics from MIRA FIVE, hosted in the EU.
+MIRA FIVE for React: consent-aware analytics and revenue attribution with one provider and three
+hooks. Built on [`@mirafive/web`](https://github.com/mirafive/sdk-web), which follows your
+consent banner and captures pageviews (also on client-side navigation) on its own. Safe for
+server rendering and StrictMode; no dependencies besides MIRA FIVE's own.
 
-## Size
-
-| Import | min + gzip |
-|---|---|
-| `@mirafive/sdk-react` | 0.47 kB |
-
-Measured with its peers (`react`, `@mirafive/sdk-browser`) external: this is what the
-package adds on top of the browser SDK. What you do not import is not shipped
-(`sideEffects: false`). No transport of its own: events
-come from `@mirafive/sdk-browser`.
+On Next.js use [`@mirafive/next`](https://github.com/mirafive/sdk-next), on TanStack Start
+[`@mirafive/tanstack`](https://github.com/mirafive/sdk-tanstack): same API, plus server helpers.
 
 ## Install
 
 ```sh
-npm install @mirafive/sdk-react @mirafive/sdk-browser
-# or: bun add / pnpm add / yarn add
+npm install @mirafive/react   # or: bun add, pnpm add, yarn add
 ```
 
-Peers: `react` ≥ 18.3 (18 and 19), `@mirafive/sdk-browser` ^1.0.0. ESM only. Using Next.js
-or TanStack Start? Use [`@mirafive/sdk-next`](https://github.com/mirafive/sdk-next) or
-[`@mirafive/sdk-tanstack`](https://github.com/mirafive/sdk-tanstack): they create the
-client for you and add the server side.
+React 18 or 19.
 
 ## Quickstart
 
 ```tsx
-// main.tsx: runs once, in the browser
-import { createMira } from "@mirafive/sdk-browser"
-import { pageviews } from "@mirafive/sdk-browser/pageviews"
-import { MiraProvider, useMira } from "@mirafive/sdk-react"
-import { createRoot } from "react-dom/client"
+// main.tsx
+import { MiraProvider } from "@mirafive/react";
 
-const mira = createMira({
-  key: import.meta.env.VITE_MIRAFIVE_KEY, // the source's website key, mf_…
-  plugins: [pageviews()]
-})
-
-function Checkout() {
-  const client = useMira()
-
-  return (
-    <button onClick={() => client.track("checkout_started", { plan: "pro" })}>
-      Checkout
-    </button>
-  )
-}
-
-createRoot(document.getElementById("root")!).render(
-  <MiraProvider client={mira}>
-    <Checkout />
-  </MiraProvider>
-)
+createRoot(root).render(
+  <MiraProvider publicKey={import.meta.env.VITE_MIRAFIVE_KEY}>
+    <App />
+  </MiraProvider>,
+);
 ```
-
-Pageviews come from the `pageviews()` plugin, which follows every SPA router through the
-Navigation API or the History API. There is no router hook to add.
-
-For revenue, add `payment_id` (1–255 characters) to the properties next to `revenue` and `currency`: the payment provider's id of the payment. For Stripe pass the Checkout Session id on the success page or the PaymentIntent id from a webhook, for example `client.track("order completed", { revenue: 49, currency: "EUR", payment_id: sessionId })`. MIRA FIVE merges the event with the payment it imports from your connected Stripe account, so the sale counts once.
-
-Verify it: open the app (not `localhost`, or pass `trackLocalhost: true`) and look for
-`POST https://collect.mirafive.io/v1/batch/mf_…` in the network tab answering `202`, then
-for the pageview in the source's live view in MIRA FIVE.
-
-### Server rendering
-
-`createMira()` needs a browser, so the server render passes `client={undefined}`. Hooks
-then use an inert client whose calls do nothing:
 
 ```tsx
-// module scope of a file both the server and the browser load
-const mira =
-  typeof window === "undefined"
-    ? undefined
-    : createMira({ key: import.meta.env.VITE_MIRAFIVE_KEY, plugins: [pageviews()] })
+// anywhere below
+import { useIdentify, useMira, useTrackOnMount } from "@mirafive/react";
 
-<MiraProvider client={mira}>
+function Pricing() {
+  const mira = useMira();
+  useTrackOnMount("pricing_viewed");
+  return <button onClick={() => mira.track("signup_started", { plan: "pro" })}>Start</button>;
+}
+
+function Session({ user }: { user?: { id: string; plan: string } }) {
+  // Identifies on sign-in, resets on sign-out.
+  useIdentify(user?.id, { plan: user?.plan });
+  return null;
+}
 ```
 
-## Consent & privacy
+## API
 
-- Default mode: `consentless` (set on `createMira`). It stores nothing, sets no cookies,
-  keeps no ids and needs no consent banner. `mode: "full"` adds an anonymous id, a session
-  id and your user id, and needs the `identity()` plugin and a consent answer.
-- Pass a consent answer with `useMira().consent(true)` or
-  `useMira().consent({ statistics })` from your consent
-  manager's callback. Before an answer nothing is stored.
-- Statistics is the only consent purpose. The old `experiments` and `targeting` keys are accepted and ignored.
-- Do Not Track, Global Privacy Control, `window.__mirafive_ignore` and prerendering send
-  nothing. The browser SDK enforces this; these bindings add no path around it.
-- This package reads and stores nothing itself.
+| Export                                              | What it does                                                                                                                                                                                                                                    |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<MiraProvider publicKey="mira_pk_…" {...options}>` | Starts the client in the browser, once per page. Takes every `@mirafive/web` option (`host`, `consent`, `autocapture`, `adapters`, `debug`), or `client` for one you made with `createMira()`. (`key` is reserved by React, hence `publicKey`.) |
+| `useMira<Events>()`                                 | The client: `track`, `page`, `identify`, `group`, `survey`, `consent`, `reset`, `flush`, `status`, `anonymousId`. On a server or without a provider, a stand-in that does nothing.                                                              |
+| `useIdentify(userId, traits?)`                      | `identify` when a user id appears or changes, `reset` when it goes away.                                                                                                                                                                        |
+| `useTrackOnMount(name, properties?)`                | One event per mount, also under StrictMode.                                                                                                                                                                                                     |
 
-## API reference
+Typed events: `useMira<{ signup_started: { plan: "free" | "pro" } }>()` checks names and
+properties. Everything about consent, automatic events and delivery is in the
+[`@mirafive/web` README](https://github.com/mirafive/sdk-web#readme).
 
-- `<MiraProvider client={mira}>`: makes the client available to the hooks.
-  `client` is a `Mira` from `createMira()`, or `undefined` while rendering on a server.
-- `useMira<Events>(): Mira<Events>`: the client. During a server render it is an inert
-  stand-in: calls do nothing and `flush()` resolves.
-- `useTrackOnMount(name, properties?)`: tracks one event when the component mounts, with
-  the properties of its first render. Sent once under StrictMode.
-- `type MiraProviderProps`.
+## For AI coding assistants
 
-Both hooks throw when no `<MiraProvider>` is above it.
+Rules for integrating MIRA FIVE correctly. They hold for every MIRA FIVE SDK.
 
-## Framework / runtime notes
-
-- The module starts with `"use client"`, so it works from React Server Components setups
-  as a client module.
-- StrictMode: no double events (`useTrackOnMount` keeps its state in a ref).
-
-## Troubleshooting
-
-| Symptom | Cause and fix |
-|---|---|
-| Nothing arrives | Local hosts are off by default (`trackLocalhost: true`); Do Not Track or GPC is on; the host is wrong; the origin is not allowed on the source. |
-| `403 secret_key_in_path` / `website_key_as_bearer` | The key kinds are swapped: browsers use the website key, servers the secret key. |
-| `403 origin_not_allowed` | Add the site's origin to the source in MIRA FIVE. |
-| "render <MiraProvider> above hooks" | A hook runs outside the provider. |
-
-## For AI agents
-
-Copy-paste setup prompt:
-
-```text
-Add MIRA FIVE analytics to this React app with @mirafive/sdk-react.
-1. Install @mirafive/sdk-react and @mirafive/sdk-browser with the project's package manager.
-   (Next.js: use @mirafive/sdk-next instead. TanStack Start: @mirafive/sdk-tanstack.)
-2. Put the source's website key in the public env var of the bundler, e.g.
-   VITE_MIRAFIVE_KEY for Vite. Never put MIRAFIVE_SECRET_KEY in browser code.
-3. In the client entry (runs once, browser only):
-     import { createMira } from "@mirafive/sdk-browser"
-     import { pageviews } from "@mirafive/sdk-browser/pageviews"
-     import { MiraProvider } from "@mirafive/sdk-react"
-     const mira = createMira({ key: import.meta.env.VITE_MIRAFIVE_KEY, plugins: [pageviews()] })
-   and wrap the app in <MiraProvider client={mira}>. Track with useMira().track(name, props)
-   or useTrackOnMount(name, props). Do not add router hooks for pageviews: pageviews() covers them.
-4. Keep the default consentless mode: it needs no banner. Only if the site already has a consent
-   manager and wants ids: add identity() from "@mirafive/sdk-browser/identity", pass mode: "full",
-   and call useMira().consent({ statistics }) from its callback.
-5. Verify: load a page (not localhost, or pass trackLocalhost: true) and check the network tab for
-   POST https://collect.mirafive.io/v1/batch/<key> answering 202; report what you changed.
-Do not add other analytics libraries, cookies or consent banners.
-```
-
-Facts for agents:
-
-- Imports: `import { MiraProvider, useMira, useTrackOnMount } from "@mirafive/sdk-react"`.
-  The client comes from `createMira` in `@mirafive/sdk-browser`; plugins from its
-  subpaths (`/pageviews`, `/identity`, `/autocapture`, `/search`). No default exports.
-- Env vars: the public website key per bundler (`VITE_MIRAFIVE_KEY`,
-  `NEXT_PUBLIC_MIRAFIVE_KEY`, `PUBLIC_MIRAFIVE_KEY`), `MIRAFIVE_HOST` (optional, default
-  `https://collect.mirafive.io`). `MIRAFIVE_SECRET_KEY` is for server code only
-  (`@mirafive/sdk-server`) and must never be imported into a component.
-- Never ship `MIRAFIVE_SECRET_KEY` to a browser bundle; a secret key in a browser is
-  refused and marked exposed.
-- `mode: "full"` needs `identity()`.
-- Server rendering: `client={undefined}` on the server.
-- Nothing throws for transport reasons; failures are dropped with a `[mirafive] …`
-  console warning on local hosts only.
-- Verify an install: the network tab shows `POST …/v1/batch/{key}` answering `202`
-  with `"accepted": n`; the event then appears in the source's live view.
-- Wire contract: [mirafive/protocol](https://github.com/mirafive/protocol).
-
-## License
-
-[MIT](LICENSE) © 2026 Cloo GmbH
+- **Keys:** the public key (`mira_pk_…`) goes in browser and app code. The secret key (`mira_sk_…`)
+  goes only into the server's environment (`MIRAFIVE_SECRET_KEY`), never into client code, a
+  `NEXT_PUBLIC_`/`VITE_`/`PUBLIC_` variable or a repository. The SDKs refuse the wrong key.
+- **Money** is sent only from the server: integer minor units plus an ISO 4217 currency
+  (`amount: 1999, currency: "EUR"` is 19.99 EUR), never floats.
+- **Count once:** give money an `entryId` from the payment provider (`stripe:in_123`), so the
+  Stripe connector and retries do not double it. Give business events a stable id:
+  `eventId: await eventIdFor("order:123:paid")`. The same key gives the same id in every SDK.
+- **Personal data** never goes into event names or properties. Use your own user id (not an email)
+  for `identify`; put email, name and phone in its traits, which MIRA FIVE encrypts at rest.
+- **Consent:** keep `consent: "auto"`; it follows the site's consent banner (Usercentrics,
+  Cookiebot, consentmanager, CCM19, Borlabs, any TCF 2.2 CMP, Google Consent Mode). Call
+  `consent()` only for a custom banner. Do not gate the SDK behind consent yourself: without
+  consent it is cookieless and still counts.
+- **Never block on analytics:** event methods return nothing, never throw, and batch on their
+  own. Do not `await` or `try` them. Call `flush()`/`shutdown()` only at the end of a script or a
+  serverless function.
+- **Server events and visitors:** pass the browser's `mira.anonymousId` to your server and set it
+  as `anonymousId` on server events, so a purchase joins the visit and its source.

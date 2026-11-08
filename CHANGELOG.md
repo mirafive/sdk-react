@@ -1,30 +1,28 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 — 2026-11-08
 
-- Revenue events may carry `payment_id`, the payment provider's id of the payment (1–255 characters), next to `revenue` and `currency`. Nothing changes in the API: pass it in the properties. The README shows a Stripe example.
-- The default ingest host is `https://collect.mirafive.io`.
+A rewrite for the current MIRA FIVE platform: consent tiers, the revenue ledger, touchpoints and
+the `/v1/batch` wire format.
 
-### Breaking
+### Added
 
-- Removed feature flags and A/B experiments: `useFlag()`, `useFlagConfig()`, the `FlagBootstrap`
-  type and the `bootstrap` prop of `<MiraProvider>`. The provider, `useMira()` and
-  `useTrackOnMount()` stay. The inert client of a server render no longer has `onFlags`.
-- Statistics is the only consent purpose. A consent call that still passes `experiments` or
-  `targeting` is accepted and the keys are ignored.
+- `MiraProvider`, `useMira`, `useIdentify`, `useTrackOnMount`; SSR- and
+  StrictMode-safe.
 
-## 1.0.0 — 2026-09-27
+### Migrating from 1.x
 
-First release on the v1 protocol, written from scratch over `@mirafive/sdk-browser` 1.0.
-
-- `<MiraProvider client bootstrap>`, `useMira()`, `useFlag()`, `useFlagConfig()` and
-  `useTrackOnMount()` (0.84 kB with peers external).
-- Flag hooks use `useSyncExternalStore`: the server render and hydration read only the
-  `bootstrap` prop (a `FlagBootstrap` or the block `UserFlags.bootstrap()` returns), so
-  both render the same markup; afterwards they follow the browser SDK's `onFlags`.
-- `useMira()` returns an inert client during a server render (`onFlags` returns a no-op
-  unsubscribe, `flush()` resolves).
-- A bootstrap older than 7 days is ignored, as sdk-browser ignores it; a config equal to
-  the bootstrap's keeps the rendered object, so hydration causes no extra render.
-- `useTrackOnMount()` sends once per mount, StrictMode included.
-- No router hooks: `pageviews()` from sdk-browser counts every SPA navigation.
+- **Keys:** projects have a public key (`mira_pk_…`, browser and apps) and a secret key
+  (`mira_sk_…`, servers). `mf_…` website and secret keys are gone. Every SDK refuses the wrong
+  kind of key with a clear message.
+- **Host:** `https://events.mirafive.io` (was `collect.mirafive.io`).
+- **Environment:** `MIRAFIVE_SECRET_KEY` and `MIRAFIVE_HOST` on servers; the public key as
+  `NEXT_PUBLIC_MIRAFIVE_KEY`, `VITE_MIRAFIVE_KEY`, `PUBLIC_MIRAFIVE_KEY` (Astro),
+  `NUXT_PUBLIC_MIRAFIVE_KEY` or `MIRAFIVE_PUBLIC_KEY` (PHP templates).
+- **Consent:** there are no modes any more. The browser SDK follows the site's consent banner
+  (`consent: "auto"`) and collects what each tier allows: cookieless without consent, an
+  anonymous id with analytics consent, a user with `identify`. Server events carry the consent
+  they were collected under (default `not_applicable`).
+- **Revenue:** `revenue()` on the server SDKs, in integer minor units with an ISO currency,
+  `entryId` (replaces `payment_id`), `entryKind`, fees, tax, refunds and subscriptions. Revenue
+  properties on plain events are no longer read.

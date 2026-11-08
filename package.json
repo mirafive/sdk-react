@@ -1,21 +1,22 @@
 {
-  "name": "@mirafive/sdk-react",
-  "version": "1.0.0",
-  "description": "MIRA FIVE SDK for React",
+  "name": "@mirafive/react",
+  "version": "2.0.0",
+  "description": "MIRA FIVE for React: a provider and hooks (useMira, useIdentify, useTrackOnMount) over @mirafive/web. SSR-safe, StrictMode-safe, no dependencies beyond MIRA FIVE's own.",
   "keywords": [
     "analytics",
-    "cookieless",
-    "gdpr",
+    "attribution",
+    "consent",
+    "hooks",
+    "mira-five",
     "mirafive",
-    "privacy",
     "react"
   ],
-  "homepage": "https://mirafive.io",
+  "homepage": "https://github.com/mirafive/sdk-react#readme",
   "bugs": {
-    "email": "support@mirafive.io"
+    "url": "https://github.com/mirafive/sdk-react/issues"
   },
   "license": "MIT",
-  "author": "MIRA FIVE <support@mirafive.io>",
+  "author": "Cloo GmbH <hallo@mirafive.io> (https://mirafive.io)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mirafive/sdk-react.git"
@@ -25,59 +26,44 @@
   ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "lint": "oxlint --type-aware --deny-warnings",
+    "build": "bun run build.ts",
+    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "size": "size-limit",
-    "check": "bun run format:check && bun run lint && bun run typecheck && bun run test && bun run build && publint --strict && attw --pack --profile esm-only && size-limit",
-    "prepublishOnly": "bun run check"
+    "lint": "oxlint",
+    "test": "bun test",
+    "typecheck": "bun check"
+  },
+  "dependencies": {
+    "@mirafive/web": "^2.0.0"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.5",
-    "@mirafive/sdk-browser": "^1.0.0",
-    "@size-limit/preset-small-lib": "^14.3.0",
-    "@testing-library/react": "^16.3.3",
-    "@types/node": "^26.6.5",
+    "@types/bun": "^1.4.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "happy-dom": "^21.0.4",
-    "oxfmt": "^0.74.0",
-    "oxlint": "^1.89.0",
-    "oxlint-tsgolint": "^7.0.2005",
-    "publint": "^0.3.25",
+    "oxfmt": "^0.77.0",
+    "oxlint": "^1.92.0",
+    "oxlint-tsgolint": "^7.0.2006",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "size-limit": "^14.3.0",
-    "tsdown": "0.23.1",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.5"
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
-    "@mirafive/sdk-browser": "^1.0.0",
-    "react": "^18.3.0 || ^19.0.0"
-  },
-  "size-limit": [
-    {
-      "name": "index",
-      "path": "dist/index.js",
-      "import": "*",
-      "gzip": true,
-      "limit": "1 kB"
-    }
-  ],
-  "engines": {
-    "node": ">=20"
+    "react": ">=18"
   },
   "packageManager": "bun@1.4.4"
 }
