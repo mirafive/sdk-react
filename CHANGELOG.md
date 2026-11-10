@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.1 — 2026-11-10
+
+### Changed
+
+- Requires `@mirafive/web` 2.0.2 (was `^2.0.0`), so an install gets the browser SDK's 2.0.1 fix:
+  without analytics consent, events no longer carry the browser's locale.
+- Built and checked with oxfmt 0.78 and oxlint 1.93. No change to the API.
+
 ## 2.0.0 — 2026-11-08
 
 A rewrite for the current MIRA FIVE platform: consent tiers, the revenue ledger, touchpoints and
