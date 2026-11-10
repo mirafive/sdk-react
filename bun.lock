@@ -5,7 +5,7 @@
     "": {
       "name": "@mirafive/react",
       "dependencies": {
-        "@mirafive/web": "^2.0.2",
+        "@mirafive/web": "^2.0.3",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -24,9 +24,9 @@
     },
   },
   "packages": {
-    "@mirafive/protocol": ["@mirafive/protocol@2.2.1", "", { "bin": { "mirafive-validate": "dist/cli.js" } }, "sha512-3ocDgDZQS3TPrSIRaRag/cCoRuDpxIGpFEcuMjQA7gPTd8NdTzsQmW9rBfqQv6efnJPn+1IMk4dswxhW7r8t8w=="],
+    "@mirafive/protocol": ["@mirafive/protocol@2.3.0", "", { "bin": { "mirafive-validate": "dist/cli.js" } }, "sha512-XCBV7CsJ8AVnExrK4sY+GwBYCOpoRp1ucazUzc35R83Vu+hEPe3m1YlgRAASxuHcTIaU3Lmbj7ZVc1oNH+QH4g=="],
 
-    "@mirafive/web": ["@mirafive/web@2.0.2", "", { "dependencies": { "@mirafive/protocol": "^2.2.1" } }, "sha512-pzxXj74O6xvKaGMAflH4MbJj1x4UBFcTMeOnIalSKojSFc/IBKYCRWH6yvkHxrrHxo8OtCtYxYZJ4ROqWhLyDQ=="],
+    "@mirafive/web": ["@mirafive/web@2.0.3", "", { "dependencies": { "@mirafive/protocol": "^2.3.0" } }, "sha512-v0hevwKZmMOEF3iDwywt3UaZdKRD5JNSTvOdsq2x+ZP3czAP2hRxRmjbdllqYlQGLCgPq8aKkMin0b+lZ8oxeQ=="],
 
     "@oxfmt/binding-android-arm-eabi": ["@oxfmt/binding-android-arm-eabi@0.78.0", "", { "os": "android", "cpu": "arm" }, "sha512-1x9NPGQG5WMOOT8spRP4hPbeqwB/P9ayxFo4EUDSle6mLmtYRqE6suXgHr93/S2nnszy77LlIa8klkKdWtHbMw=="],
 
