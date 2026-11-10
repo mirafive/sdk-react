@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2 — 2026-11-10
+
+### Changed
+
+- Requires `@mirafive/web` 2.0.3, which requires `@mirafive/protocol` 2.3.0. No change to the API:
+  erasing a person needs the secret key, so it is a server SDK method and not part of the browser
+  SDKs.
+
 ## 2.0.1 — 2026-11-10
 
 ### Changed

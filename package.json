@@ -1,6 +1,6 @@
 {
   "name": "@mirafive/react",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "MIRA FIVE for React: a provider and hooks (useMira, useIdentify, useTrackOnMount) over @mirafive/web. SSR-safe, StrictMode-safe, no dependencies beyond MIRA FIVE's own.",
   "keywords": [
     "analytics",
@@ -49,7 +49,7 @@
     "typecheck": "bun check"
   },
   "dependencies": {
-    "@mirafive/web": "^2.0.2"
+    "@mirafive/web": "^2.0.3"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
